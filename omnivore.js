@@ -65,7 +65,7 @@ class Omnivore extends LivingCreature{
                 let newY = grEatCell[1];
                 
                 matrix[this.y][this.x] = 0;
-                matrix[newY][newX] = 5;
+                matrix[newY][newX] = 4;
                 this.x = newX
                 this.y = newY
                 this.energy+=2
@@ -82,7 +82,7 @@ class Omnivore extends LivingCreature{
                     let newY = predCell[1];
                     
                     matrix[this.y][this.x] = 0;
-                    matrix[newY][newX] = 5;
+                    matrix[newY][newX] = 4;
                     this.x = newX
                     this.y = newY
                     this.energy+=2
