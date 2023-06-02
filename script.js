@@ -21,6 +21,8 @@ for(let i = 0; i < matrix_height; i++){
  let predatorArr = [];
  let omnivoreArr = [];
  let virusArr = [];
+ let fireArr = [];
+ let burntGrassArr = [];
 
  function mouseClicked(){
     if(mouseX < side * matrix_width && mouseY < side * matrix_height && mouseX > 0 && mouseY > 0){
@@ -29,21 +31,60 @@ for(let i = 0; i < matrix_height; i++){
         console.log(indexY);
         let indexX = parseInt(mouseX/side);
         console.log(indexX);
-        if (matrix[indexY][indexX] = 1){
+        if (matrix[indexY][indexX] == 1){
             grassArr.splice(grassArr.findIndex(item => item.x === indexX && item.y === indexY), 1);
         }
-        else if (matrix[indexY][indexX] = 2){
+        else if (matrix[indexY][indexX] == 2){
             grassEaterArr.splice(grassEaterArr.findIndex(item => item.x === indexX && item.y === indexY), 1);
         }
-        else if (matrix[indexY][indexX] = 3){
+        else if (matrix[indexY][indexX] == 3){
             predatorArr.splice(predatorArr.findIndex(item => item.x === indexX && item.y === indexY), 1);
         }
-        else if (matrix[indexY][indexX] = 4){
+        else if (matrix[indexY][indexX] == 4){
             omnivoreArr.splice(omnivoreArr.findIndex(item => item.x === indexX && item.y === indexY), 1);
         }
-        matrix[indexY][indexX] = 5
-        let virus1 = new Virus(indexX,indexY, 8);
-        virusArr.push(virus1);
+        else if (matrix[indexY][indexX] == 5){
+            virusArr.splice(virusArr.findIndex(item => item.x === indexX && item.y === indexY), 1);
+        }
+
+        if(create == "Virus"){
+            matrix[indexY][indexX] = 5;
+            let virus1 = new Virus(indexX,indexY, 8, 5);
+            virusArr.push(virus1);
+        }
+        else if(create == "Fire"){
+            matrix[indexY][indexX] = 6;
+            let fire1 = new Fire(indexX,indexY, 2, 6);
+            fireArr.push(fire1);
+        }
+        else if(create =="Boom"){
+            for (let y = indexY-5; y < indexY+5; y++){
+                for(let x = indexX-5; x < indexX+5; x++){
+                    thisCell = matrix[y][x];
+                    if(thisCell == 1){
+                        grassArr.splice(grassArr.findIndex(item => item.x === thisCell[0] && item.y === thisCell[1]), 1);
+                    }
+                    else if(thisCell == 2){
+                        grassEaterArr.splice(grassEaterArr.findIndex(item => item.x === thisCell[0] && item.y === thisCell[1]), 1);
+                    }
+                    else if(thisCell == 3){
+                        predatorArr.splice(predatorArr.findIndex(item => item.x === thisCell[0] && item.y === thisCell[1]), 1);
+                    }
+                    else if(thisCell == 4){
+                        omnivoreArr.splice(omnivoreArr.findIndex(item => item.x === thisCell[0] && item.y === thisCell[1]), 1);
+                    }
+                    else if(thisCell == 5){
+                        virusArr.splice(virusArr.findIndex(item => item.x === thisCell[0] && item.y === thisCell[1]), 1);
+                    }
+                    else if(thisCell == 6){
+                        fireArr.splice(fireArr.findIndex(item => item.x === thisCell[0] && item.y === thisCell[1]), 1);
+                    }
+                    matrix[y][x] = 7;
+                    let boom1 = new BurntGrass(x,y, 8, 7);
+                    burntGrassArr.push(boom1);
+                }
+            }
+        }
     }
  }
 
@@ -79,6 +120,12 @@ for(let i = 0; i < matrix_height; i++){
             }
             else if(matrix[y][x] == 5){
                 fill('#E56399');
+            }
+            else if(matrix[y][x] == 6){
+                fill('#db4320');
+            }
+            else if(matrix[y][x] == 7){
+                fill('#370000');
             }
             rect(x*side, y*side, side, side);   
         }
@@ -143,6 +190,29 @@ for(let i = 0; i < matrix_height; i++){
                 } 
             }
          }
+         for(let i in fireArr){
+            fireArr[i].mult();
+            if(fireArr[i].energy==0){
+                matrix[fireArr[i].y][fireArr[i].x] = 0;
+                fireArr.splice(i, 1);
+            }
+            else{
+                if(fireArr[i].eat() == true){
+                    fireArr.splice(i, 1);
+                }
+                else if(fireArr[i].move() == true){
+                    fireArr.splice(i, 1);
+                } 
+            }
+         }
+         for(let i in burntGrassArr){
+            console.log("OKKKKKK")
+            burntGrassArr[i].loseEnergy();
+            if(burntGrassArr[i].energy==0){
+                matrix[burntGrassArr[i].y][burntGrassArr[i].x] = 0;
+                burntGrassArr.splice(i, 1);
+            }
+         }
          for(let i in grassArr){
             if(season == "Winter"){
                 grassArr[i].mulInWinter();
@@ -179,4 +249,18 @@ for(let i = 0; i < matrix_height; i++){
              }
         }
     }
+ }
+
+ setInterval(()=> {
+    fetch("http://localhost:3000/", {
+        method: "POST",
+        body: `Кол-во травы: ${grassArr.length}, Кол-во травоядных: ${grassEaterArr.length}, Кол-во хищников: ${predatorArr.length}, Кол-во всеядных: ${omnivoreArr.length}, Кол-во вирусов: ${virusArr.length}, Кол-во огня: ${fireArr.length}, Кол-во выжженой земли: ${burntGrassArr.length}`
+    })
+ }, 10000)
+
+ function endFire(){
+    for(let i in fireArr){
+        matrix[fireArr[i].y][fireArr[i].x] = 0;
+        fireArr.splice(i, 1);
+     }
  }
